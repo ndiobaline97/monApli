@@ -29,6 +29,8 @@ class SuperadminFixtures extends Fixture
         $user->setImageName("jkhjhj.jpg");
         $user->setUpdatedAt(new \DateTime());
         $user->setRoles(["ROLE_SUPER_ADMIN"]);
+        $user->getPartenaire();
+
         $manager->persist($user);
         $manager->flush();
     }

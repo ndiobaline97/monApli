@@ -33,8 +33,6 @@ class UserController extends AbstractController
         
         $file=$request->files->all()['imageName'];
         
-            
-                //var_dump($passwordEncoder);die();
             $user->setImageFile($file);
             $user->setPassword(
                 $passwordEncoder->encodePassword(
@@ -48,7 +46,6 @@ class UserController extends AbstractController
             $partenaire=$recup->find($data['partenaire']);
             $user->setPartenaire($partenaire);
             
-
             $role=[];
             if($profils->getLibelle() == "admin"){
                 $role=(["ROLE_ADMIN"]);

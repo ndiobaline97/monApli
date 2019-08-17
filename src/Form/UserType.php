@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Form;
-use App\Entity\User ;
+use App\Entity\User;
 use App\Entity\Profile;
 use App\Entity\Partenaire;
 use Symfony\Component\Form\AbstractType;

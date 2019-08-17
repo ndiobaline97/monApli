@@ -39,7 +39,7 @@ class User implements UserInterface
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\Partenaire")
-     * @ORM\JoinColumn(nullable=false)
+     * @ORM\JoinColumn(nullable=true)
      */
     private $partenaire;
 

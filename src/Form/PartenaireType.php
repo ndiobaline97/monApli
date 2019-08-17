@@ -15,7 +15,7 @@ class PartenaireType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
-            ->add('numCompte')
+            //->add('numCompte')
             ->add('entreprise')
             ->add('ninea')
             ->add('adresse')

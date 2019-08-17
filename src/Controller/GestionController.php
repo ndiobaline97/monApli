@@ -6,7 +6,6 @@ use App\Entity\User;
 use App\Entity\Depot;
 use App\Entity\Compte;
 use App\Entity\Profile;
-
 use App\Form\UserType;
 use App\Form\DepotType;
 use App\Form\CompteType;
@@ -33,23 +32,22 @@ class GestionController extends AbstractController
     {
         $partenaire = new Partenaire();
         $form = $this->createForm(PartenaireType::class, $partenaire);
-        $data = json_decode($request->getContent(), true);
+        $data = $request->request->all();
         $form->submit($data);
         $entityManager->persist($partenaire);
         $entityManager->flush();
-        //recuperation de l id du partenaire//
+        //recuperation de l'id du partenaire//
         $repository = $this->getDoctrine()->getRepository(Partenaire::class);
         $part = $repository->find($partenaire->getId());
 
         $compte = new Compte();
         $form = $this->createForm(CompteType::class, $compte);
-        $data = json_decode($request->getContent(), true);
+        $data = $request->request->all();
         $form->submit($data);
         $compte->setSolde(1);
-        /* $num = rand(100, 999);
-   
-        $number = $num;
-        $compte->set($number); */
+        $num = rand(100, 999);
+        $number=$num."";
+        $compte->setNumCompte($number);
         $compte->setPartenaire($part);
         $entityManager = $this->getDoctrine()->getManager();
     
@@ -60,10 +58,12 @@ class GestionController extends AbstractController
         $user->setRoles(["ROLE_ADMIN_PARTENAIRE"]);
         $user->setPartenaire($part);
         $user->setStatut("actif");
-        $user->setPassword(encoderPassword($user,
-                             $form->getPassword('password')->getData()
-                            )
-                            );
+        $user->setPassword($encoder->encodePassword($user,
+                             $form->get('plainPassword')->getData()
+                            ));
+        $file=$request->files->all()['imageName'];
+
+        $user->setImageFile($file);                    
         //$user->setPassword($hash);
         $entityManager = $this->getDoctrine()->getManager();
         $entityManager->persist($compte);
@@ -107,19 +107,18 @@ class GestionController extends AbstractController
     {
         $depot = new Depot();
         $form = $this->createForm(DepotType::class,$depot);
-        $data = json_decode($request->getContent(), true);
+        $data=$request->request->all();
         $user=$this->getUser();
-        var_dump($user);
+        $depot->setCaissier($user);
         $depot->setDateDepot(new \Datetime());
         $depot->getMontant();
         $form->submit($data);
         if($form->isSubmitted()){  
              $depot->getMontant();
-            if ($depot->getMontant()>=75000) {
+             var_dump($depot->getMontant()); 
+            if ($depot->getMontant()>=75000){
                 $compte= $depot->getCompte();
-              
                 $compte->setSolde($compte->getSolde()+$depot->getMontant());
-               
                 $entityManager = $this->getDoctrine()->getManager();
                 $entityManager->persist($compte);
                 $entityManager->persist($depot);
@@ -132,7 +131,7 @@ class GestionController extends AbstractController
             'status' => 500,
             'message' => 'Vous devez renseigner le montant et le compte où doit être effectuer le dépot '
         ];
-        return new Response($data, 500);
+            return new Response($data, 500);
 
     }
 }

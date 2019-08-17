@@ -20,12 +20,7 @@ class Partenaire
      * @ORM\Column(type="integer")
      */
     private $id;
-
-    /**
-     * @ORM\Column(type="integer")
-     */
-    private $numCompte;
-
+    
     /**
      * @ORM\Column(type="string", length=255)
      */
@@ -59,18 +54,6 @@ class Partenaire
     public function getId(): ?int
     {
         return $this->id;
-    }
-
-    public function getNumCompte(): ?int
-    {
-        return $this->numCompte;
-    }
-
-    public function setNumCompte(int $numCompte): self
-    {
-        $this->numCompte = $numCompte;
-
-        return $this;
     }
 
     public function getEntreprise(): ?string
