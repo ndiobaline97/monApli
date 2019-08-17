@@ -32,6 +32,12 @@ class Depot
      */
     private $dateDepot;
 
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\User")
+     * @ORM\JoinColumn(nullable=false)
+     */
+    private $caissier;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -69,6 +75,18 @@ class Depot
     public function setDateDepot(\DateTimeInterface $dateDepot): self
     {
         $this->dateDepot = $dateDepot;
+
+        return $this;
+    }
+
+    public function getCaissier(): ?User
+    {
+        return $this->caissier;
+    }
+
+    public function setCaissier(?User $caissier): self
+    {
+        $this->caissier = $caissier;
 
         return $this;
     }

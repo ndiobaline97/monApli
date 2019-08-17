@@ -43,6 +43,7 @@ class SecurityController extends AbstractController
         ];
         return new JsonResponse($info, 500);
     }
+
      /**
      * @Route("/login", name="login", methods={"POST"})
      */
@@ -51,7 +52,9 @@ class SecurityController extends AbstractController
         $user = $this->getUser();
         return $this->json([
             'username' => $user->getUsername(),
-            'roles' => $user->getRoles()
+            'roles' => $user->getPassword(),
+            'password' => $user->getRoles()
+
         ]);
     }
 }

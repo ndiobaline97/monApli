@@ -1,0 +1,42 @@
+php bin/console doctrine:schema:update --force
+./bin/console doctrine:fixtures:load
+mkdir -p config/jwt
+openssl genrsa -out config/jwt/private.pem -aes256 4096
+openssl rsa -pubout -in config/jwt/private.pem -out config/jwt/public.pem
+	AUTHENTIFICATION
+http://127.0.0.1:8000/login
+{
+	"username":"yalya",
+	"password":"welcome"
+}
+	AJOUT PRESTATAIRE
+http://127.0.0.1:8000/ajoutprest
+{
+	"prenom":"EL Hadji",
+	"nom":"LY",
+	"telephone":771000201,
+	"CNI":2234567890152369,
+	"adresse":"DAKAR",
+	"NomEntreprise":"YONE",
+	"ninea":"78ZZE655",
+	"AdresseEntreprise":"COLOBANE",
+	"NumeroRegistre":7878965,
+	"TelephoneEntreprise":336698744
+}
+	AJOUT SYSTEME
+http://127.0.0.1:8000/ajoutsys
+{
+	"prenom":"Mamadou",
+	"nom":"LY",
+	"telephone":771259687,
+	"username":"momzo",
+	"profil":1
+}
+	POUR CAISSIER
+{
+	"prenom":"Cherif",
+	"nom":"LY",
+	"telephone":778969851,
+	"username":"cherif",
+	"profil":2
+}

@@ -24,7 +24,11 @@ class SuperadminFixtures extends Fixture
     
         $password = $this->encoder->encodePassword($user, 'pass_1234');
         $user->setPassword($password);
-    
+
+        $user->setStatut('actif');
+        $user->setImageName("jkhjhj.jpg");
+        $user->setUpdatedAt(new \DateTime());
+        $user->setRoles(["ROLE_SUPER_ADMIN"]);
         $manager->persist($user);
         $manager->flush();
     }
