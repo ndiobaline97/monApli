@@ -17,6 +17,7 @@ security:
             security: false
         login:
             pattern:  ^/api/login
+            user_checker: app.user_checker
             stateless: true
             anonymous: true
             json_login:
