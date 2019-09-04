@@ -30,7 +30,8 @@ class SuperadminFixtures extends Fixture
         $user->setUpdatedAt(new \DateTime());
         $user->setRoles(["ROLE_SUPER_ADMIN"]);
         $user->getPartenaire();
-
+        
+        
         $manager->persist($user);
         $manager->flush();
     }

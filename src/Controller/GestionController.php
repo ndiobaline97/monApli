@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+
 use App\Entity\User;
 use App\Entity\Depot;
 use App\Entity\Compte;
@@ -10,15 +11,18 @@ use App\Form\UserType;
 use App\Form\DepotType;
 use App\Form\CompteType;
 use App\Entity\Partenaire;
+use App\Entity\Transaction;
 use App\Form\PartenaireType;
+use App\Form\TransactionType;
+use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
-
-
+use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 /**
      * @Route("/api", name="gestion_projet")
@@ -26,7 +30,7 @@ use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 class GestionController extends AbstractController
 {
     /** 
-     * @Route("/newadmin", name="admin_utilisateur_new", methods={"POST"})
+     * @Route("/ajout", name="admin_utilisateur_compte", methods={"POST"})
      */
     public function new(Request $request, EntityManagerInterface $entityManager, UserPasswordEncoderInterface $encoder)
     {
@@ -69,7 +73,7 @@ class GestionController extends AbstractController
         $entityManager->persist($compte);
         $entityManager->persist($user);
         $entityManager->flush();
-        return new Response('Admin Partenaire ajoute', Response::HTTP_CREATED);
+        return new Response('Ajout de user de son partenaire et dun compte pur ce dernier', Response::HTTP_CREATED);
     }
     /** 
      * @Route("/newcompte", name="admin", methods={"POST"})
@@ -87,7 +91,7 @@ class GestionController extends AbstractController
     }
 
     /** 
-     * @Route("/newprofile", name="admin", methods={"POST"})
+     * @Route("/newprofile", name="profile", methods={"POST"})
      */
     public function newProfile(Request $request, EntityManagerInterface $entityManager, UserPasswordEncoderInterface $encoder)
     {
@@ -134,4 +138,54 @@ class GestionController extends AbstractController
             return new Response($data, 500);
 
     }
+    /**
+     * @Route("/liste" , name="liste" , methods={"GET"})
+     */
+
+     publiC function lister(UserRepository $userRepository, SerializerInterface $serializer)
+     {
+        $user = $userRepository->findAll();
+        
+        $data = $serializer->serialize($user,'json');
+
+        return new Response($data, 200, [
+            'Content-Type' => 'application/json'
+        ]);
+     }
+  /**
+   * @Route("/envoie" , name="envoie", methods={"POST"})
+   */
+    
+   public function envoie(Request $request, EntityManagerInterface $entityManager ,ValidatorInterface $validator):Response
+   {
+       $envoie = new Transaction();
+       $form=$this->createForm(TransactionType::class,$envoie);
+       $data=$request->request->all();
+       $form->handleRequest($request);
+       $form->submit($data);
+       $envoie->setDateEnvoie(new \DateTime());
+       $user=$this->getUser();
+       $envoie->setUser($user);
+       $envoie->setCodeEnvoie(rand(11111,99999));
+       $envoie->setNumTransaction(rand(11111,99999));
+       $envoie->getMontant();
+       $repository = $this->getDoctrine()->getRepository(Commissions::class);
+       $commission = $repository->findAll();
+        foreach ($commission as $commission) {
+            $commission->getId(); //recuper touS les id de la colonne
+            $commission->getBorneinf(); 
+            $commission->getBornesup();
+            $commission->getMontantCommision();
+            if ($montant = $commission->getBorneinf() && $montant = $commission->getBornesup()) {
+                $montantcommission = $commission->getMontantCommision();
+            }
+        }
+        $envoie->setFraisEnvoie($montantcommission);
+
+        $entityManager->persist($envoie);
+        $entityManager->flush();
+
+       return new Response('envoie effectue',Response::HTTP_CREATED);
+   }
+
 }

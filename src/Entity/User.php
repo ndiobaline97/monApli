@@ -76,6 +76,11 @@ class User implements UserInterface
      */
     private $updatedAt;
 
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\Compte")
+     */
+    private $compte;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -103,11 +108,11 @@ class User implements UserInterface
      */
     public function getRoles(): array
     {
-        $roles = $this->roles;
+        $role = $this->roles;
         // guarantee every user at least has ROLE_USER
-        $roles[] = 'ROLE_USER';
+        /* $roles[] = 'ROLE_USER'; */
 
-        return array_unique($roles);
+        return array_unique($role);
     }
 
     public function setRoles(array $roles): self
@@ -225,6 +230,18 @@ class User implements UserInterface
     public function setUpdatedAt(\DateTimeInterface $updatedAt):self
     {
         $this->updatedAt = $updatedAt;
+
+        return $this;
+    }
+
+    public function getCompte(): ?Compte
+    {
+        return $this->compte;
+    }
+
+    public function setCompte(?Compte $compte): self
+    {
+        $this->compte = $compte;
 
         return $this;
     }
