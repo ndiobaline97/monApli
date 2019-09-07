@@ -2,6 +2,8 @@
 
 namespace App\Entity;
 use DateTimeInterface;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\HttpFoundation\File\File;
 use Vich\UploaderBundle\Mapping\Annotation as Vich;
@@ -80,6 +82,16 @@ class User implements UserInterface
      * @ORM\ManyToOne(targetEntity="App\Entity\Compte")
      */
     private $compte;
+
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\Transaction", mappedBy="useretrait")
+     */
+    private $transaction;
+
+    public function __construct()
+    {
+        $this->transaction = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -242,6 +254,37 @@ class User implements UserInterface
     public function setCompte(?Compte $compte): self
     {
         $this->compte = $compte;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Transaction[]
+     */
+    public function getTransaction(): Collection
+    {
+        return $this->transaction;
+    }
+
+    public function addTransaction(Transaction $transaction): self
+    {
+        if (!$this->transaction->contains($transaction)) {
+            $this->transaction[] = $transaction;
+            $transaction->setUseretrait($this);
+        }
+
+        return $this;
+    }
+
+    public function removeTransaction(Transaction $transaction): self
+    {
+        if ($this->transaction->contains($transaction)) {
+            $this->transaction->removeElement($transaction);
+            // set the owning side to null (unless already changed)
+            if ($transaction->getUseretrait() === $this) {
+                $transaction->setUseretrait(null);
+            }
+        }
 
         return $this;
     }

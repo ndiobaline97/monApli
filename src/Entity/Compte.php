@@ -17,7 +17,7 @@ class Compte
     private $id;
 
     /**
-     * @ORM\Column(type="bigint")
+     * @ORM\Column(type="integer")
      */
     private $Solde;
 

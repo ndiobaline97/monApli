@@ -2,7 +2,6 @@
 
 namespace App\Controller;
 
-
 use App\Entity\User;
 use App\Entity\Depot;
 use App\Entity\Compte;
@@ -11,11 +10,15 @@ use App\Form\UserType;
 use App\Form\DepotType;
 use App\Form\CompteType;
 use App\Entity\Partenaire;
+use App\Entity\Tarif;
 use App\Entity\Transaction;
 use App\Form\PartenaireType;
 use App\Form\TransactionType;
+use App\Repository\CompteRepository;
+use App\Repository\TransactionRepository;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Form\FormTypeInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -23,6 +26,8 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\Form\FormBuilder;
 
 /**
      * @Route("/api", name="gestion_projet")
@@ -59,7 +64,7 @@ class GestionController extends AbstractController
         $form = $this->createForm(UserType::class, $user);
         $form->handleRequest($request);
         $form->submit($data);
-        $user->setRoles(["ROLE_ADMIN_PARTENAIRE"]);
+        $user->setRoles(["ROLE_CAISSIER"]);
         $user->setPartenaire($part);
         $user->setStatut("actif");
         $user->setPassword($encoder->encodePassword($user,
@@ -73,7 +78,7 @@ class GestionController extends AbstractController
         $entityManager->persist($compte);
         $entityManager->persist($user);
         $entityManager->flush();
-        return new Response('Ajout de user de son partenaire et dun compte pur ce dernier', Response::HTTP_CREATED);
+        return new Response('Ajout dun partenaire de son user   et dun compte pour ce dernier', Response::HTTP_CREATED);
     }
     /** 
      * @Route("/newcompte", name="admin", methods={"POST"})
@@ -152,40 +157,133 @@ class GestionController extends AbstractController
             'Content-Type' => 'application/json'
         ]);
      }
-  /**
-   * @Route("/envoie" , name="envoie", methods={"POST"})
-   */
-    
-   public function envoie(Request $request, EntityManagerInterface $entityManager ,ValidatorInterface $validator):Response
-   {
-       $envoie = new Transaction();
-       $form=$this->createForm(TransactionType::class,$envoie);
-       $data=$request->request->all();
-       $form->handleRequest($request);
-       $form->submit($data);
-       $envoie->setDateEnvoie(new \DateTime());
-       $user=$this->getUser();
-       $envoie->setUser($user);
-       $envoie->setCodeEnvoie(rand(11111,99999));
-       $envoie->setNumTransaction(rand(11111,99999));
-       $envoie->getMontant();
-       $repository = $this->getDoctrine()->getRepository(Commissions::class);
-       $commission = $repository->findAll();
-        foreach ($commission as $commission) {
-            $commission->getId(); //recuper touS les id de la colonne
-            $commission->getBorneinf(); 
-            $commission->getBornesup();
-            $commission->getMontantCommision();
-            if ($montant = $commission->getBorneinf() && $montant = $commission->getBornesup()) {
-                $montantcommission = $commission->getMontantCommision();
-            }
+
+    /**
+     * @Route("/envoie", name="envoie", methods={"POST"}) 
+     */
+    public function envoie (TransactionRepository $transaction,Request $request,EntityManagerInterface $entityManager)
+    {
+        // AJOUT OPERATION
+        $transaction= new Transaction();
+        $form = $this->createForm(TransactionType::class, $transaction);
+        //$form->handleRequest($request);
+        $values=$request->request->all();
+        $form->submit($values);
+        $valeur=0;
+
+       if ($form->isSubmitted()) {
+        $transaction->setDateEnvoie(new \DateTime());
+        //generation du code d'envoie
+        $e="SN";
+        $c=rand(10000000,99999999);
+        $code=$e.$c;
+        $transaction->setCodeEnvoie($code);
+        //generation du numero de la transaction
+        $m=rand(10000000,99999999);
+        $transaction->setNumTransaction($m);
+        
+        // recuperer l'id du guichetier qui effectue l'envoie
+        $user=$this->getUser();
+        $transaction->setUser($user);
+
+        // recuperer la valeur du frais
+        $repository=$this->getDoctrine()->getRepository(Tarif::class);
+        $commission=$repository->findAll();
+
+        //recuperer le montant saisi
+        $montant=$transaction->getMontant();
+
+        //Verifier si le montant à envoyer est disponible
+        $comptes=$this->getUser()->getCompte()->getSolde();
+            if($values['montant']>= $comptes){
+                return $this->json([
+                    'messagù.10e
+                    18' => 'votre solde( '.$comptes->getSolde().' ) ne vous permez pas d\'effectuer cet envoie'
+                ]);
+               }
+               else{
+                     // trouver les frais qui correspondent au montant à envoyer
+            foreach ($commission as $value ) {
+               
+        if($montant >= $value->getBorneInf() &&  $montant <= $value->getBorneSup()){
+            $valeur=$value->getValeur();
+            break;
+                 
         }
-        $envoie->setFraisEnvoie($montantcommission);
+        } 
+           $transaction->setfraisEnvoie($value->getValeur());
 
-        $entityManager->persist($envoie);
-        $entityManager->flush();
+           // repartition des commissions 
+           $wari=($valeur*40)/100;
+           $part=($valeur*20)/100;
+           $etat=($valeur*30)/100;
+           $retrait=($valeur*10)/100;
 
-       return new Response('envoie effectue',Response::HTTP_CREATED);
-   }
+           // dimunition du monatnt envoyé au niveau du solde et ajout de la commission pour le partenaire
+           $comptes->setSolde($comptes->getSolde()-$transaction->getMontant()+ $part);
 
+
+           $transaction->setCommissionSysteme($wari);
+           $transaction->setCommissionUser($part);
+           $transaction->setCommissionEtat($etat);
+           $transaction->setCommissionRetrait($retrait);
+
+           $total= $transaction->getfraisEnvoie()+ $transaction->getMontant();
+           $transaction->setTotal($total);
+
+           $entityManager->persist($transaction);
+           $entityManager->flush();
+
+            $data = [
+               'status1' => 201,
+               'message1' => 'L\'envoie  a été effectué'
+           ];
+           return new JsonResponse($data, 201);
+        }
+        $data = [
+            'status1' => 500,
+            'message1' => 'ERREUR, VERIFIER LES DONNÉES SAISIES'
+        ];
+        return new JsonResponse($data, 500);
+       }
+    }
+
+    /**
+     * @Route("/retrait", name="retrait" ) 
+     */
+    public function retrait (Request $request,TransactionRepository $trans, EntityManagerInterface $entityManager)
+    {
+       $transaction= new Transaction();
+        $form = $this->createForm(TransactionType::class, $transaction);
+        $values =$request->request->all();
+        $form->handleRequest($request);
+        $form->submit($values);
+        $codeEnvoie=$transaction->getCodeEnvoie();
+        //dump($codeEnvoie);die();
+        $code=$trans->findOneBy(['codeEnvoie'=>$codeEnvoie]);
+        
+
+            if(!$code ){
+                return new Response('Ce code est invalide ',Response::HTTP_CREATED);
+            }
+                $statut=$code->getetatCode();
+
+                if($code->getCodeEnvoie()==$codeEnvoie && $statut=="retire" ){
+                    return new Response('Le code est déja retiré',Response::HTTP_CREATED);
+                }
+                    $user=$this->getUser();
+                    $code->setUseretrait($user);
+                    //$beneficiaire->setNumeroPiece($values)
+                    $code->setetatCode("retire");
+                    $code->setDateRetrait(new \DateTime());
+                    $code->setNumPieceB($values['numPieceB']);
+                    $code->setTypePieceB($values['typePieceB']);
+                    $retrait=$code->getCommissionRetrait();
+                    $solde=$this->getUser()->getCompte();
+                    $solde->setSolde($solde->getSolde()+$retrait);
+
+                    $entityManager->persist($code);
+                    $entityManager->flush();
+                return new Response('Retrait efféctué avec succés',Response::HTTP_CREATED);   
+     }
 }

@@ -37,7 +37,7 @@ class Transaction
     private $telephoneE;
 
     /**
-     * @ORM\Column(type="datetime")
+     * @ORM\Column(type="datetime" )
      */
     private $dateEnvoie;
 
@@ -67,7 +67,7 @@ class Transaction
     private $dateExpiration;
 
     /**
-     * @ORM\Column(type="bigint")
+     * @ORM\Column(type="float")
      */
     private $montant;
 
@@ -92,7 +92,7 @@ class Transaction
     private $telephoneB;
 
     /**
-     * @ORM\Column(type="integer")
+     * @ORM\Column(type="string")
      */
     private $codeEnvoie;
 
@@ -125,6 +125,38 @@ class Transaction
      * @ORM\ManyToOne(targetEntity="App\Entity\User")
      */
     private $user;
+
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    private $dateRetrait;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="transaction")
+     */
+    private $useretrait;
+
+   
+
+    /**
+     * @ORM\Column(type="integer")
+     */
+    private $commissionRetrait;
+
+    /**
+     * @ORM\Column(type="string", length=255)
+     */
+    private $etatCode;
+
+    /**
+     * @ORM\Column(type="string", length=255)
+     */
+    private $typePieceB;
+
+    /**
+     * @ORM\Column(type="string", length=255)
+     */
+    private $numPieceB;
     
     public function getId(): ?int
     {
@@ -183,7 +215,7 @@ class Transaction
     {
         return $this->telephoneE;
     }
-
+    
     public function setTelephoneE(int $telephoneE): self
     {
         $this->telephoneE = $telephoneE;
@@ -251,19 +283,17 @@ class Transaction
         return $this;
     }
 
-    public function getMontant(): ?int
+    public function getMontant(): ?float
     {
         return $this->montant;
     }
 
-    public function setMontant(int $montant): self
+    public function setMontant(float $montant): self
     {
         $this->montant = $montant;
 
         return $this;
     }
-
-    
 
     public function getNomB(): ?string
     {
@@ -313,12 +343,12 @@ class Transaction
         return $this;
     }
 
-    public function getCodeEnvoie(): ?int
+    public function getCodeEnvoie(): ?string
     {
         return $this->codeEnvoie;
     }
 
-    public function setCodeEnvoie(int $codeEnvoie): self
+    public function setCodeEnvoie(string $codeEnvoie): self
     {
         $this->codeEnvoie = $codeEnvoie;
 
@@ -393,6 +423,79 @@ class Transaction
     public function setUser(?User $user): self
     {
         $this->user = $user;
+
+        return $this;
+    }
+
+    public function getDateRetrait(): ?\DateTimeInterface
+    {
+        return $this->dateRetrait;
+    }
+
+    public function setDateRetrait(\DateTimeInterface $dateRetrait): self
+    {
+        $this->dateRetrait = $dateRetrait;
+
+        return $this;
+    }
+
+    public function getUseretrait(): ?User
+    {
+        return $this->useretrait;
+    }
+
+    public function setUseretrait(?User $useretrait): self
+    {
+        $this->useretrait = $useretrait;
+
+        return $this;
+    }
+
+
+    public function getCommissionRetrait(): ?int
+    {
+        return $this->commissionRetrait;
+    }
+
+    public function setCommissionRetrait(int $commissionRetrait): self
+    {
+        $this->commissionRetrait = $commissionRetrait;
+
+        return $this;
+    }
+
+    public function getetatCode(): ?string
+    {
+        return $this->etatCode;
+    }
+
+    public function setetatCode(string $etatCode): self
+    {
+        $this->etatCode = $etatCode;
+
+        return $this;
+    }
+
+    public function getTypePieceB(): ?string
+    {
+        return $this->typePieceB;
+    }
+
+    public function setTypePieceB(string $typePieceB): self
+    {
+        $this->typePieceB = $typePieceB;
+
+        return $this;
+    }
+
+    public function getNumPieceB(): ?string
+    {
+        return $this->numPieceB;
+    }
+
+    public function setNumPieceB(string $numPieceB): self
+    {
+        $this->numPieceB = $numPieceB;
 
         return $this;
     }
