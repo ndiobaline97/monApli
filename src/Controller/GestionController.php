@@ -56,7 +56,7 @@ class GestionController extends AbstractController
         $data = $request->request->all();
         $form->submit($data);
         $compte->setSolde(1);
-        $num = rand(100, 999);
+        $num = rand(1111111111,9999999999);
         $number=$num."";
         $compte->setNumCompte($number);
         $compte->setPartenaire($part);
@@ -77,9 +77,9 @@ class GestionController extends AbstractController
         $user->setPassword($encoder->encodePassword($user,
                              $form->get('plainPassword')->getData()
                             ));
-       // $file=$request->files->all()['imageName'];
+        $file=$request->files->all()['imageName'];
 
-       // $user->setImageFile($file);                    
+        $user->setImageFile($file);                    
         //$user->setPassword($hash);
         $entityManager = $this->getDoctrine()->getManager();
        // $entityManager->persist($compte);
