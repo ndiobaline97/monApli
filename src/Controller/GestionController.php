@@ -4,30 +4,31 @@ namespace App\Controller;
 
 use App\Entity\User;
 use App\Entity\Depot;
+use App\Entity\Tarif;
 use App\Entity\Compte;
-use App\Entity\Profile;
 use App\Form\UserType;
+use App\Entity\Profile;
 use App\Form\DepotType;
 use App\Form\CompteType;
+use App\Form\RetraitType;
 use App\Entity\Partenaire;
-use App\Entity\Tarif;
 use App\Entity\Transaction;
 use App\Form\PartenaireType;
 use App\Form\TransactionType;
-use App\Repository\CompteRepository;
-use App\Repository\TransactionRepository;
 use App\Repository\UserRepository;
+use App\Repository\CompteRepository;
+use Symfony\Component\Form\FormBuilder;
 use Doctrine\ORM\EntityManagerInterface;
+use App\Repository\TransactionRepository;
 use Symfony\Component\Form\FormTypeInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
-use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\Form\FormBuilder;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 
 /**
      * @Route("/api", name="gestion_projet")
@@ -194,8 +195,9 @@ class GestionController extends AbstractController
         $montant=$transaction->getMontant();
 
         //Verifier si le montant à envoyer est disponible
-        $comptes=$this->getUser()->getCompte()->getSolde();
-            if($values['montant']>= $comptes){
+        $user=$this->getUser();
+        $comptes=$user->getCompte();
+            if($values['montant']>= $comptes->getSolde()){
                 return $this->json([
                     'messagù.10e
                     18' => 'votre solde( '.$comptes->getSolde().' ) ne vous permez pas d\'effectuer cet envoie'
@@ -218,7 +220,7 @@ class GestionController extends AbstractController
            $part=($valeur*20)/100;
            $etat=($valeur*30)/100;
            $retrait=($valeur*10)/100;
-
+           // var_dump($comptes->getSolde()); die();
            // dimunition du monatnt envoyé au niveau du solde et ajout de la commission pour le partenaire
            $comptes->setSolde($comptes->getSolde()-$transaction->getMontant()+ $part);
 
@@ -230,10 +232,11 @@ class GestionController extends AbstractController
 
            $total= $transaction->getfraisEnvoie()+ $transaction->getMontant();
            $transaction->setTotal($total);
-
+           $transaction->setetatCode('envoye');
+           
            $entityManager->persist($transaction);
            $entityManager->flush();
-
+           
             $data = [
                'status1' => 201,
                'message1' => 'L\'envoie  a été effectué'
@@ -254,12 +257,11 @@ class GestionController extends AbstractController
     public function retrait (Request $request,TransactionRepository $trans, EntityManagerInterface $entityManager)
     {
        $transaction= new Transaction();
-        $form = $this->createForm(TransactionType::class, $transaction);
+        $form = $this->createForm(RetraitType::class, $transaction);
         $values =$request->request->all();
         $form->handleRequest($request);
         $form->submit($values);
         $codeEnvoie=$transaction->getCodeEnvoie();
-        //dump($codeEnvoie);die();
         $code=$trans->findOneBy(['codeEnvoie'=>$codeEnvoie]);
         
 
@@ -272,16 +274,18 @@ class GestionController extends AbstractController
                     return new Response('Le code est déja retiré',Response::HTTP_CREATED);
                 }
                     $user=$this->getUser();
+                    var_dump($user);die();
                     $code->setUseretrait($user);
-                    //$beneficiaire->setNumeroPiece($values)
+                    //$beneficiaire->setNumPiece($values)
                     $code->setetatCode("retire");
                     $code->setDateRetrait(new \DateTime());
                     $code->setNumPieceB($values['numPieceB']);
                     $code->setTypePieceB($values['typePieceB']);
-                    $retrait=$code->getCommissionRetrait();
-                    $solde=$this->getUser()->getCompte();
-                    $solde->setSolde($solde->getSolde()+$retrait);
 
+                    $retrait=$code->getCommissionRetrait();
+                    $Solde=$this->getUser()->getCompte();
+                    //dump($codeEnvoie);die();
+                    $Solde->setSolde($Solde->getSolde()+$retrait);
                     $entityManager->persist($code);
                     $entityManager->flush();
                 return new Response('Retrait efféctué avec succés',Response::HTTP_CREATED);   

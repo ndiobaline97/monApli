@@ -48,7 +48,7 @@ class UserController extends AbstractController
             
             $role=[];
             if($profils->getLibelle() == "admin"){
-                $role=(["ROLE_ADMIN"]);
+                $role=(["ROLE_ADMIN_PARTENAIRE"]);
             }
             elseif($profils->getLibelle() == "user"){
                 $role=(["ROLE_USER"]);
