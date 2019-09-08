@@ -44,6 +44,7 @@ class GestionController extends AbstractController
         $form = $this->createForm(PartenaireType::class, $partenaire);
         $data = $request->request->all();
         $form->submit($data);
+        $partenaire->setStatut("actif");
         $entityManager->persist($partenaire);
         $entityManager->flush();
         //recuperation de l'id du partenaire//
@@ -60,23 +61,28 @@ class GestionController extends AbstractController
         $compte->setNumCompte($number);
         $compte->setPartenaire($part);
         $entityManager = $this->getDoctrine()->getManager();
-    
+        $entityManager->persist($compte);
+        $entityManager->flush();
+        $repository = $this->getDoctrine()->getRepository(Compte::class);
+        $idcompte = $repository->find($compte->getId());
+       
         $user = new User();
         $form = $this->createForm(UserType::class, $user);
         $form->handleRequest($request);
         $form->submit($data);
-        $user->setRoles(["ROLE_CAISSIER"]);
+        $user->setRoles(["ROLE_ADMIN_PARTENAIRE"]);
         $user->setPartenaire($part);
         $user->setStatut("actif");
+        $user->setCompte($idcompte);
         $user->setPassword($encoder->encodePassword($user,
                              $form->get('plainPassword')->getData()
                             ));
-        $file=$request->files->all()['imageName'];
+       // $file=$request->files->all()['imageName'];
 
-        $user->setImageFile($file);                    
+       // $user->setImageFile($file);                    
         //$user->setPassword($hash);
         $entityManager = $this->getDoctrine()->getManager();
-        $entityManager->persist($compte);
+       // $entityManager->persist($compte);
         $entityManager->persist($user);
         $entityManager->flush();
         return new Response('Ajout dun partenaire de son user   et dun compte pour ce dernier', Response::HTTP_CREATED);
