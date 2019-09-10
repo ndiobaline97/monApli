@@ -5,7 +5,10 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Symfony\Component\Serializer\Annotation\Groups;
+
 use App\Entity\User;
+
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\PartenaireRepository")
@@ -16,21 +19,27 @@ class Partenaire
      * @ORM\Id()
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
+     * @Groups({"show"})
+     * 
      */
     private $id;
     
     /**
      * @ORM\Column(type="string", length=255)
+     * @Groups({"show"})
+     * 
      */
     private $entreprise;
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Groups({"show"})
      */
     private $ninea;
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Groups({"show"})
      */
     private $adresse;
 
@@ -46,6 +55,7 @@ class Partenaire
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Groups({"show"})
      */
     private $statut;
 

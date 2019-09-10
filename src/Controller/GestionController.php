@@ -17,9 +17,11 @@ use App\Form\PartenaireType;
 use App\Form\TransactionType;
 use App\Repository\UserRepository;
 use App\Repository\CompteRepository;
+use App\Repository\ProfileRepository;
 use Symfony\Component\Form\FormBuilder;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Repository\TransactionRepository;
+use Proxies\__CG__\App\Entity\Compte as ProxiesCompte;
 use Symfony\Component\Form\FormTypeInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -87,6 +89,57 @@ class GestionController extends AbstractController
         $entityManager->flush();
         return new Response('Ajout dun partenaire de son user   et dun compte pour ce dernier', Response::HTTP_CREATED);
     }
+
+    /** 
+     * @Route("/newuser", name="nouveau_user", methods={"POST"})
+     */
+    public function addUser(Request $request, EntityManagerInterface $entityManager, UserPasswordEncoderInterface $encoder){
+        
+
+         $user = new User();
+        $form = $this->createForm(UserType::class, $user);
+        $data = $request->request->all();
+        $form->handleRequest($request);
+        $form->submit($data);
+        //$user->setRoles(["ROLE_ADMIN_PARTENAIRE"]);
+        $repository = $this->getDoctrine()->getRepository(Profile::class);
+        $a = $repository->findById($user->getProfile());
+        foreach ($a as $id) {
+        $num=$id->getId();
+ 
+     }
+
+     if ( $num==1) {
+     
+         $user->setRoles(["ROLE_SUPER_ADMIN"]);
+     } else if ($num == 2) {
+         $user->setRoles(["ROLE_ADMIN_PARTENAIRE"]);
+     }
+     else if($num == 3){
+        $user->setRoles(["ROLE_USER"]);
+    }
+     else if($num == 4){
+        $user->setRoles(["ROLE_CAISSIER"]);
+     }
+     $idpartenaire = $this->getUser()->getPartenaire();
+     $user->setPartenaire($idpartenaire);
+        //$user->setPartenaire($part);
+        $user->setStatut("actif");
+        //$user->setCompte($idcompte);
+        $user->setPassword($encoder->encodePassword($user,
+                             $form->get('plainPassword')->getData()
+                            ));
+        $file=$request->files->all()['imageName'];
+
+        $user->setImageFile($file);                    
+        //$user->setPassword($hash);
+        $entityManager = $this->getDoctrine()->getManager();
+       // $entityManager->persist($compte);
+        $entityManager->persist($user);
+        $entityManager->flush();
+        return new Response('Ajout Utilisateur effectué', Response::HTTP_CREATED);
+    }
+
     /** 
      * @Route("/newcompte", name="admin", methods={"POST"})
      */
@@ -116,6 +169,21 @@ class GestionController extends AbstractController
 
         return new Response('Profile ajoute', Response::HTTP_CREATED);
     }
+    /**
+     *@Route("/liste/profile",name="listeprofil", methods ={"GET"})
+     */
+
+    public function listerprofile(ProfileRepository $profileRepository, SerializerInterface $serializer)
+    {
+        $profile = $profileRepository->findAll();
+        $data = $serializer->serialize($profile, 'json');
+        return new Response($data, 200, [
+            'Content-Type' => 'application/json'
+        ]);
+    }
+  
+
+
    /**
      * @Route("/depot", name="depot_new", methods={"GET","POST"})
      */
@@ -151,7 +219,7 @@ class GestionController extends AbstractController
 
     }
     /**
-     * @Route("/liste" , name="liste" , methods={"GET"})
+     * @Route("/liste" , name="listeuser" , methods={"GET"})
      */
 
      publiC function lister(UserRepository $userRepository, SerializerInterface $serializer)

@@ -3,11 +3,14 @@
 namespace App\Controller;
 
 use App\Entity\User;
+use App\Entity\Compte;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 
 /**
@@ -55,6 +58,24 @@ class SecurityController extends AbstractController
             'roles' => $user->getPassword(),
             'password' => $user->getRoles()
 
+        ]);
+    }
+
+      /**
+     * @Route("/showcompte", name="depot_new", methods={"GET"})
+     */
+    public function showCompte(Request $request,EntityManagerInterface $entityManager, SerializerInterface $serializer){
+        $values = json_decode($request->getContent());
+        $compte = new Compte();
+        $compte->setNumCompte($values->numCompte);
+        $repository = $this->getDoctrine()->getRepository(Compte::class);
+        $compte = $repository->findBynumCompte($values->numCompte);
+        $data = $serializer->serialize($compte, 'json',[
+            'groups'=>['show']]
+        );
+
+        return new Response($data, 200, [
+            'Content-Type' => 'application/json'
         ]);
     }
 }

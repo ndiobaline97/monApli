@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\CompteRepository")
@@ -13,22 +14,27 @@ class Compte
      * @ORM\Id()
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
+     * @Groups({"show"})
+     * 
      */
     private $id;
 
     /**
      * @ORM\Column(type="integer")
+     * @Groups({"show"})
      */
     private $Solde;
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\Partenaire")
      * @ORM\JoinColumn(nullable=false)
+     * @Groups({"show"})
      */
     private $partenaire;
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Groups({"show"})
      */
     private $numCompte;
 
